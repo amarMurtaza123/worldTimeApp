@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:world_time/services/world_time.dart';
 
-class ChooseLocation extends StatefulWidget {
-  const ChooseLocation({Key? key}) : super(key: key);
+import '../models/world_model.dart';
 
-  @override
-  State<ChooseLocation> createState() => _ChooseLocationState();
-}
+class ChooseLocation extends StatelessWidget {
+  final List<String> locations;
+  final List<String> flags;
+  final List<String> urls;
 
-class _ChooseLocationState extends State<ChooseLocation> {
+  const ChooseLocation(this.urls, this.locations, this.flags);
 
-  List<WorldTime> locations = [
-    WorldTime(url: 'Europe/London', location: 'London', flag: 'uk.png'),
-    WorldTime(url: 'Europe/Berlin', location: 'Athens', flag: 'greece.png'),
-    WorldTime(url: 'Africa/Cairo', location: 'Cairo', flag: 'egypt.png'),
-    WorldTime(url: 'Africa/Nairobi', location: 'Nairobi', flag: 'kenya.png'),
-    WorldTime(url: 'America/Chicago', location: 'Chicago', flag: 'usa.png'),
-    WorldTime(url: 'America/New_York', location: 'New York', flag: 'usa.png'),
-    WorldTime(url: 'Asia/Seoul', location: 'Seoul', flag: 'south_korea.png'),
-    WorldTime(url: 'Asia/Jakarta', location: 'Jakarta', flag: 'indonesia.png'),
-  ];
-
-  void updateTime(index) async {
-    WorldTime instance = locations[index];
-    await instance.getTime();
-    Navigator.pop(context, {
-      'location': instance.location,
-      'time': instance.time,
-      'flag': instance.flag,
-      'isDaytime': instance.isDayTime,
-    });
+  void updateTime(index, BuildContext context) async {
+    WorldModel? data;
+    final worldTime = Provider.of<WorldTime>(context, listen: false);
+    worldTime.setWorldModel(urls[index], locations[index], flags[index]);
+    try {
+      data = await worldTime.callTimeApi();
+    } catch (error) {
+      debugPrint(error.toString());
+    } finally {
+      if (data != null) Navigator.pop(context);
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -39,28 +30,28 @@ class _ChooseLocationState extends State<ChooseLocation> {
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         backgroundColor: Colors.blue[800],
-        title: Text('Choose A Location'),
+        title: const Text('Choose A Location'),
         centerTitle: true,
       ),
       body: ListView.builder(
-          itemCount: locations.length,
+          itemCount: urls.length,
           itemBuilder: (context, index) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 1.0, horizontal: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 1.0, horizontal: 4.0),
               child: Card(
                 child: ListTile(
                   onTap: () {
-                    updateTime(index);
+                    updateTime(index, context);
                   },
-                  title: Text(locations[index].location),
+                  title: Text(locations[index]),
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage('assets/${locations[index].flag}'),
+                    backgroundImage: AssetImage('assets/${flags[index]}'),
                   ),
                 ),
               ),
             );
-          }
-      ),
+          }),
     );
   }
 }

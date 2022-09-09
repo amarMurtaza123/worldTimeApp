@@ -1,98 +1,92 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:world_time/pages/choose_location.dart';
+import 'package:world_time/services/world_time.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  String? bgImage;
+  Color? bgColor;
+
+  Home({Key? key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
-
-  Map data={};
-
   @override
   Widget build(BuildContext context) {
+    return Consumer<WorldTime>(
+      builder: (context, state, ch) {
+        widget.bgImage = state.isDayTime ? 'day.png' : 'night.png';
+        widget.bgColor =
+            state.isDayTime ? Colors.lightBlue : Colors.indigo[700] as Color;
 
-    data = data.isEmpty ? ModalRoute.of(context)!.settings.arguments as Map : data  ;
-    print(data);
-
-    //set Background
-    String bgImage = data['isDayTime'] ? 'day.png' : 'night.png';
-    Color? bgColor = data['isDayTime'] ? Colors.lightBlue : Colors.indigo[700];
-
-    return Scaffold(
-      backgroundColor: bgColor,
-      body: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/$bgImage'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
-            child: Column(
-              children: [
-                TextButton.icon(
-                  onPressed: () async{
-                    dynamic result = await Navigator.pushNamed(context, '/location');
-                    if(result != null){
-                      setState(() {
-                        data = {
-                          'time': result['time'],
-                          'location': result['location'],
-                          'isDaytime': result['isDaytime'] ,
-                          'flag': result['flag']
-                        };
-                      });
-                    }
-                  },
-                  icon: Icon(
-                    Icons.edit_location,
-                    color: Colors.grey[300],
-                  ),
-                  label: Text(
-                    'Edit Location',
-                    style: TextStyle(
-                      color: Colors.grey[300],
-                    ),
-                  ),
-                  style: TextButton.styleFrom(
-                    primary: Colors.black
-                  ),
+        return Scaffold(
+          backgroundColor: widget.bgColor,
+          body: SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/${widget.bgImage}'),
+                  fit: BoxFit.cover,
                 ),
-                SizedBox(height: 20,),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 120, 0, 0),
+                child: Column(
                   children: [
+                    TextButton.icon(
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  ChooseLocation(state.urlList, state.locationList, state.flagList))),
+                      icon: Icon(
+                        Icons.edit_location,
+                        color: Colors.grey[300],
+                      ),
+                      label: Text(
+                        'Edit Location',
+                        style: TextStyle(
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                      style: TextButton.styleFrom(primary: Colors.black),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.getLocation(),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            letterSpacing: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20.0,
+                    ),
                     Text(
-                      data['location'],
-                      style: TextStyle(
-                        fontSize: 28,
-                        letterSpacing: 2,
+                      state.getTime(),
+                      style: const TextStyle(
+                        fontSize: 66,
                         color: Colors.white,
                       ),
-                    )
+                    ),
                   ],
                 ),
-                SizedBox(height: 20.0,),
-                Text(
-                  data['time'],
-                  style: TextStyle(
-                    fontSize: 66,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
-
-
