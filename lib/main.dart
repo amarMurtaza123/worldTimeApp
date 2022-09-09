@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:world_time/pages/choose_location.dart';
+import 'package:provider/provider.dart';
 import 'package:world_time/pages/loading.dart';
-import 'package:world_time/pages/home.dart';
-
+import 'package:world_time/services/world_time.dart';
 
 void main() {
-  runApp(MaterialApp(
-    initialRoute: '/',
-    routes: {
-      '/': (context) => Loading(),
-      '/home': (context) => Home(),
-      '/location': (context) => ChooseLocation(),
-    },
-
+  runApp(ChangeNotifierProvider(
+    create: (context) => WorldTime(),
+    child: const MaterialApp(
+      home: Loading(),
+    ),
   ));
 }
-
